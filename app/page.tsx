@@ -1,0 +1,28 @@
+import Link from 'next/link';
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4">
+      <div className="max-w-2xl w-full text-center text-white">
+        <h1 className="text-5xl font-bold mb-6">Stripe Payment System</h1>
+        <p className="text-xl mb-8 opacity-90">
+          Complete payment integration with checkout and dashboard
+        </p>
+        <div className="flex justify-center space-x-4">
+          <Link
+            href="/checkout"
+            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
+          >
+            Create Payment
+          </Link>
+          <Link
+            href="/dashboard"
+            className="bg-slate-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-700 transition duration-200 border-2 border-indigo-600"
+          >
+            View Dashboard
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
