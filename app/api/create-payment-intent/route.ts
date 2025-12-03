@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Convert amount to cents (Stripe uses smallest currency unit)
     const amountInCents = Math.round(parseFloat(amount) * 100);
 
-    // Create PaymentIntent
+    // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: currency.toLowerCase(),
@@ -26,7 +26,9 @@ export async function POST(request: NextRequest) {
         productName,
         customerEmail: customerEmail || '',
       },
-      receipt_email: customerEmail || undefined,
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
 
     // Store payment record with pending status
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
       paymentId: paymentRecord.id,
     });
   } catch (error: any) {
