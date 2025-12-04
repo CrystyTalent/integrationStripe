@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import {
   Elements,
   CardElement,
@@ -11,17 +11,27 @@ import {
 } from '@stripe/react-stripe-js';
 import Link from 'next/link';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
-
 interface CheckoutFormProps {
   amount: number;
   currency: string;
   productName: string;
   clientSecret: string;
   customerEmail: string;
+  storeName?: string;
+  successUrl?: string;
+  cancelUrl?: string;
 }
 
-function CheckoutForm({ amount, currency, productName, clientSecret, customerEmail }: CheckoutFormProps) {
+function CheckoutForm({ 
+  amount, 
+  currency, 
+  productName, 
+  clientSecret, 
+  customerEmail,
+  storeName = 'Store',
+  successUrl,
+  cancelUrl,
+}: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -67,7 +77,12 @@ function CheckoutForm({ amount, currency, productName, clientSecret, customerEma
         setError(confirmError.message || 'Payment failed');
         setLoading(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        router.push(`/success?payment_intent=${paymentIntent.id}`);
+        // Redirect to success URL if provided, otherwise default
+        if (successUrl) {
+          window.location.href = successUrl.replace('{PAYMENT_INTENT_ID}', paymentIntent.id);
+        } else {
+          router.push(`/success?payment_intent=${paymentIntent.id}`);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -108,10 +123,8 @@ function CheckoutForm({ amount, currency, productName, clientSecret, customerEma
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           <p className="text-sm text-gray-300 text-center">
-            If you didn't receive your product or are unhappy with your purchase, please visit our{' '}
-            <a href="/support" className="text-indigo-400 hover:text-indigo-300 underline transition-colors">
-              support page
-            </a>
+            If you didn't receive your product or are unhappy with your purchase, please contact{' '}
+            <span className="text-indigo-400 font-semibold">{storeName}</span>
             {' '}for assistance or a possible refund.
           </p>
         </div>
@@ -124,10 +137,10 @@ function CheckoutForm({ amount, currency, productName, clientSecret, customerEma
           <div className="p-6 md:p-8 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-xl">A</span>
+                <span className="text-black font-bold text-xl">{storeName.charAt(0).toUpperCase()}</span>
               </div>
               <div>
-                <span className="text-white font-semibold text-lg block">amstore</span>
+                <span className="text-white font-semibold text-lg block">{storeName}</span>
                 <span className="text-gray-400 text-xs">{productName}</span>
               </div>
             </div>
@@ -233,38 +246,97 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  const token = searchParams.get('token');
+  
+  // Legacy parameters (for backward compatibility)
   const amount = searchParams.get('amount') || '100.00';
   const currency = searchParams.get('currency') || 'usd';
   const productName = searchParams.get('product') || 'Payment';
   const customerEmail = searchParams.get('email') || '';
 
   const [clientSecret, setClientSecret] = useState('');
+  const [stripePublishableKey, setStripePublishableKey] = useState<string | null>(null);
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [checkoutData, setCheckoutData] = useState<{
+    amount: number;
+    currency: string;
+    productName: string;
+    customerEmail: string;
+    storeName: string;
+    successUrl?: string;
+    cancelUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
-    const createPaymentIntent = async () => {
+    const initializeCheckout = async () => {
       try {
-        const response = await fetch('/api/create-payment-intent', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount,
+        if (token) {
+          // Token-based checkout (multi-tenant)
+          const response = await fetch(`/api/checkout/validate-token?token=${token}`);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to validate token');
+          }
+
+          // Set store's Stripe publishable key
+          setStripePublishableKey(data.store.stripePublishableKey);
+          setStripePromise(loadStripe(data.store.stripePublishableKey));
+          
+          // Set checkout data
+          setCheckoutData({
+            amount: data.checkout.amount,
+            currency: data.checkout.currency,
+            productName: data.checkout.productName,
+            customerEmail: data.checkout.customerEmail || '',
+            storeName: data.store.storeName,
+            successUrl: data.checkout.successUrl,
+            cancelUrl: data.checkout.cancelUrl,
+          });
+          
+          setClientSecret(data.checkout.clientSecret);
+        } else {
+          // Legacy checkout (backward compatibility)
+          const defaultKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+          if (!defaultKey) {
+            throw new Error('Stripe publishable key not configured');
+          }
+          
+          setStripePublishableKey(defaultKey);
+          setStripePromise(loadStripe(defaultKey));
+          
+          // Create payment intent using legacy API
+          const response = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              amount,
+              currency,
+              productName,
+              customerEmail,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to create payment intent');
+          }
+
+          setCheckoutData({
+            amount: parseFloat(amount),
             currency,
             productName,
             customerEmail,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to create payment intent');
+            storeName: 'Store',
+          });
+          
+          setClientSecret(data.clientSecret);
         }
-
-        setClientSecret(data.clientSecret);
       } catch (err: any) {
         setError(err.message || 'Something went wrong');
       } finally {
@@ -272,8 +344,8 @@ function CheckoutContent() {
       }
     };
 
-    createPaymentIntent();
-  }, [amount, currency, productName, customerEmail]);
+    initializeCheckout();
+  }, [token, amount, currency, productName, customerEmail]);
 
   if (loading) {
     return (
@@ -307,27 +379,32 @@ function CheckoutContent() {
     );
   }
 
+  if (!clientSecret || !checkoutData || !stripePromise) {
+    return null;
+  }
+
   return (
     <>
-      {clientSecret && (
-        <Elements
-          stripe={stripePromise}
-          options={{
-            clientSecret,
-            appearance: {
-              theme: 'night',
-            },
-          }}
-        >
-          <CheckoutForm
-            amount={parseFloat(amount)}
-            currency={currency}
-            productName={productName}
-            clientSecret={clientSecret}
-            customerEmail={customerEmail}
-          />
-        </Elements>
-      )}
+      <Elements
+        stripe={stripePromise}
+        options={{
+          clientSecret,
+          appearance: {
+            theme: 'night',
+          },
+        }}
+      >
+        <CheckoutForm
+          amount={checkoutData.amount}
+          currency={checkoutData.currency}
+          productName={checkoutData.productName}
+          clientSecret={clientSecret}
+          customerEmail={checkoutData.customerEmail}
+          storeName={checkoutData.storeName}
+          successUrl={checkoutData.successUrl}
+          cancelUrl={checkoutData.cancelUrl}
+        />
+      </Elements>
     </>
   );
 }
