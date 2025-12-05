@@ -63,19 +63,17 @@ export async function POST(request: NextRequest) {
       username: username.trim(),
       email: email.toLowerCase().trim(),
       password, // Will be hashed automatically
-      // Role and store assignments are managed internally; default to "customer" here
-      role: 'customer',
       isActive: true,
     });
 
     await user.save();
 
     // Return user data (without password)
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         message: 'User registered successfully',
         user: {
-          id: user._id,
+          id: user._id.toString(),
           username: user.username,
           email: user.email,
           isActive: user.isActive,
@@ -84,21 +82,21 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+    return NextResponse.json(response, request);
   } catch (error: any) {
     console.error('User registration error:', error);
-
     if (error.code === 11000) {
       // MongoDB duplicate key error
       return NextResponse.json(
         { error: 'User with this email or username already exists' },
         { status: 409 }
       );
+    } else {
+      return NextResponse.json(
+        { error: error.message || 'Failed to register user' },
+        { status: 500 }
+      );
     }
-
-    return NextResponse.json(
-      { error: error.message || 'Failed to register user' },
-      { status: 500 }
-    );
   }
 }
 
@@ -108,7 +106,6 @@ export async function GET(request: NextRequest) {
       message: 'User Registration API',
       method: 'POST',
       requiredFields: ['username', 'email', 'password'],
-      optionalFields: [],
       example: {
         username: 'johndoe',
         email: 'john@example.com',
