@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ICheckoutToken extends Document {
   token: string;
-  storeId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   paymentIntentId?: string;
   amount: number;
   currency: string;
@@ -23,9 +23,9 @@ const CheckoutTokenSchema = new Schema<ICheckoutToken>(
       unique: true,
       index: true,
     },
-    storeId: {
+    userId: {
       type: Schema.Types.ObjectId,
-      ref: 'Store',
+      ref: 'User',
       required: true,
       index: true,
     },
@@ -77,7 +77,7 @@ const CheckoutTokenSchema = new Schema<ICheckoutToken>(
 
 // Index for faster lookups
 CheckoutTokenSchema.index({ token: 1, used: 1 });
-CheckoutTokenSchema.index({ storeId: 1, used: 1 });
+CheckoutTokenSchema.index({ userId: 1, used: 1 });
 CheckoutTokenSchema.index({ expiresAt: 1 });
 
 const CheckoutToken = mongoose.models.CheckoutToken || mongoose.model<ICheckoutToken>('CheckoutToken', CheckoutTokenSchema);

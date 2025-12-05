@@ -17,7 +17,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
     await connectDB();
 
     // Build query
-    const query: any = { storeId: store._id };
+    const query: any = { userId: store._id };
     
     if (status && ['pending', 'completed', 'failed', 'canceled'].includes(status)) {
       query.status = status;

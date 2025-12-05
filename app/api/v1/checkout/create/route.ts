@@ -57,8 +57,8 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
       amount: amountInCents,
       currency: currencyLower,
       metadata: {
-        storeId: store._id,
-        storeName: store.storeName,
+        userId: store._id,
+        username: store.username,
         productName,
         customerEmail: customerEmail || '',
       },
@@ -75,7 +75,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
     // Save checkout token
     await CheckoutToken.create({
       token,
-      storeId: store._id,
+      userId: store._id,
       paymentIntentId: paymentIntent.id,
       amount: parseFloat(amount),
       currency: currencyLower,
@@ -89,7 +89,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
 
     // Save payment record
     await Payment.create({
-      storeId: store._id,
+      userId: store._id,
       paymentIntentId: paymentIntent.id,
       amount: parseFloat(amount),
       currency: currencyLower,
@@ -97,7 +97,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
       customerEmail: customerEmail || undefined,
       metadata: {
         productName,
-        storeName: store.storeName,
+        username: store.username,
       },
     });
 

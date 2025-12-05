@@ -17,7 +17,7 @@ interface CheckoutFormProps {
   productName: string;
   clientSecret: string;
   customerEmail: string;
-  storeName?: string;
+  username?: string;
   successUrl?: string;
   cancelUrl?: string;
 }
@@ -28,7 +28,7 @@ function CheckoutForm({
   productName, 
   clientSecret, 
   customerEmail,
-  storeName = 'Store',
+  username,
   successUrl,
   cancelUrl,
 }: CheckoutFormProps) {
@@ -122,9 +122,9 @@ function CheckoutForm({
       {/* Support Banner */}
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3">
         <div className="max-w-2xl mx-auto">
-          <p className="text-sm text-gray-300 text-center">
+            <p className="text-sm text-gray-300 text-center">
             If you didn't receive your product or are unhappy with your purchase, please contact{' '}
-            <span className="text-indigo-400 font-semibold">{storeName}</span>
+            <span className="text-indigo-400 font-semibold">{username || 'the seller'}</span>
             {' '}for assistance or a possible refund.
           </p>
         </div>
@@ -136,11 +136,11 @@ function CheckoutForm({
           {/* Header */}
           <div className="p-6 md:p-8 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-xl">{storeName.charAt(0).toUpperCase()}</span>
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-xl">{(username && username.length) ? username.charAt(0).toUpperCase() : '?'}</span>
               </div>
               <div>
-                <span className="text-white font-semibold text-lg block">{storeName}</span>
+                <span className="text-white font-semibold text-lg block">{username || 'Store'}</span>
                 <span className="text-gray-400 text-xs">{productName}</span>
               </div>
             </div>
@@ -264,7 +264,7 @@ function CheckoutContent() {
     currency: string;
     productName: string;
     customerEmail: string;
-    storeName: string;
+    username?: string;
     successUrl?: string;
     cancelUrl?: string;
   } | null>(null);
@@ -291,7 +291,7 @@ function CheckoutContent() {
             currency: data.checkout.currency,
             productName: data.checkout.productName,
             customerEmail: data.checkout.customerEmail || '',
-            storeName: data.store.storeName,
+            username: data.store.username,
             successUrl: data.checkout.successUrl,
             cancelUrl: data.checkout.cancelUrl,
           });
@@ -332,7 +332,6 @@ function CheckoutContent() {
             currency,
             productName,
             customerEmail,
-            storeName: 'Store',
           });
           
           setClientSecret(data.clientSecret);
@@ -400,7 +399,7 @@ function CheckoutContent() {
           productName={checkoutData.productName}
           clientSecret={clientSecret}
           customerEmail={checkoutData.customerEmail}
-          storeName={checkoutData.storeName}
+          username={checkoutData.username}
           successUrl={checkoutData.successUrl}
           cancelUrl={checkoutData.cancelUrl}
         />

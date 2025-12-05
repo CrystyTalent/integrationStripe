@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       token,
       used: false,
       expiresAt: { $gt: new Date() }, // Not expired
-    }).populate('storeId');
+    }).populate('userId');
 
     if (!checkoutToken) {
       return NextResponse.json(
@@ -34,15 +34,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get Stripe client secret from the store's Stripe account
-
+    // Get Stripe client secret from the user's Stripe account
+    const user = checkoutToken.userId as any;
+    
     // Retrieve payment intent to get client secret
     let clientSecret = '';
-    
+    if (checkoutToken.paymentIntentId && user?.stripeSecretKeyEncrypted) {
+      try {
+        const stripeSecretKey = user.getDecryptedStripeSecretKey();
+        const stripe = new Stripe(stripeSecretKey);
+        const paymentIntent = await stripe.paymentIntents.retrieve(checkoutToken.paymentIntentId);
+        clientSecret = paymentIntent.client_secret || '';
+      } catch (error) {
+        console.error('Error retrieving payment intent:', error);
+      }
+    }
 
     return NextResponse.json({
       valid: true,
       token: checkoutToken.token,
+      store: {
+        stripePublishableKey: user?.stripePublishableKey || '',
+        username: user?.username,
+      },
       checkout: {
         amount: checkoutToken.amount,
         currency: checkoutToken.currency,

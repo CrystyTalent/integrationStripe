@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPayment extends Document {
-  storeId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   paymentIntentId?: string;
   checkoutSessionId?: string;
   amount: number;
@@ -15,9 +15,9 @@ export interface IPayment extends Document {
 
 const PaymentSchema = new Schema<IPayment>(
   {
-    storeId: {
+    userId: {
       type: Schema.Types.ObjectId,
-      ref: 'Store',
+      ref: 'User',
       required: true,
       index: true,
     },
@@ -63,8 +63,8 @@ const PaymentSchema = new Schema<IPayment>(
 );
 
 // Indexes for faster lookups
-PaymentSchema.index({ storeId: 1, status: 1 });
-PaymentSchema.index({ storeId: 1, createdAt: -1 });
+PaymentSchema.index({ userId: 1, status: 1 });
+PaymentSchema.index({ userId: 1, createdAt: -1 });
 PaymentSchema.index({ paymentIntentId: 1 });
 PaymentSchema.index({ checkoutSessionId: 1 });
 

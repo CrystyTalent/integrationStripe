@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import Store from '@/models/Store';
 
 export interface AuthenticatedRequest extends NextRequest {
   store?: {
     _id: string;
-    storeName: string;
+    username: string;
     email: string;
-    stripePublishableKey: string;
+    stripePublishableKey?: string;
     getDecryptedStripeSecretKey: () => string;
     getDecryptedWebhookSecret: () => string | undefined;
   };
@@ -19,8 +18,6 @@ export interface AuthenticatedUserRequest extends NextRequest {
     _id: string;
     username: string;
     email: string;
-    role: 'admin' | 'store_owner' | 'customer';
-    storeId?: string;
   };
 }
 
@@ -60,20 +57,20 @@ export async function authenticateApiKey(
     // Connect to database
     await connectDB();
 
-    // Find store by API key hash
-    const stores = await Store.find({ isActive: true });
+    // Find user by API key hash
+    const users = await User.find({ isActive: true, apiKeyHash: { $exists: true, $ne: null } });
     
-    // Compare API key with all stores (since we can't directly query by hash)
-    let store = null;
-    for (const s of stores) {
-      const isMatch = await s.compareApiKey(apiKey);
+    // Compare API key with all users (since we can't directly query by hash)
+    let user = null;
+    for (const u of users) {
+      const isMatch = await u.compareApiKey(apiKey);
       if (isMatch) {
-        store = s;
+        user = u;
         break;
       }
     }
 
-    if (!store) {
+    if (!user) {
       return {
         store: null,
         error: NextResponse.json(
@@ -83,11 +80,11 @@ export async function authenticateApiKey(
       };
     }
 
-    if (!store.isActive) {
+    if (!user.isActive) {
       return {
         store: null,
         error: NextResponse.json(
-          { error: 'Store account is inactive' },
+          { error: 'User account is inactive' },
           { status: 403 }
         ),
       };
@@ -95,12 +92,12 @@ export async function authenticateApiKey(
 
     return {
       store: {
-        _id: store._id.toString(),
-        storeName: store.storeName,
-        email: store.email,
-        stripePublishableKey: store.stripePublishableKey,
-        getDecryptedStripeSecretKey: () => store.getDecryptedStripeSecretKey(),
-        getDecryptedWebhookSecret: () => store.getDecryptedWebhookSecret(),
+        _id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        stripePublishableKey: user.stripePublishableKey,
+        getDecryptedStripeSecretKey: () => user.getDecryptedStripeSecretKey(),
+        getDecryptedWebhookSecret: () => user.getDecryptedWebhookSecret(),
       },
       error: null,
     };
@@ -195,8 +192,6 @@ export async function authenticateUser(
         _id: user._id.toString(),
         username: user.username,
         email: user.email,
-        role: user.role,
-        storeId: user.storeId?.toString(),
       },
       error: null,
     };

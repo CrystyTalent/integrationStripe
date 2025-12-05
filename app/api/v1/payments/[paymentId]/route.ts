@@ -23,10 +23,10 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
     // Connect to database
     await connectDB();
 
-    // Find payment by ID and store ID (ensure store can only access their own payments)
+    // Find payment by ID and user ID (ensure user can only access their own payments)
     const payment = await Payment.findOne({
       _id: paymentId,
-      storeId: store._id,
+      userId: store._id,
     }).lean();
 
     if (!payment) {
