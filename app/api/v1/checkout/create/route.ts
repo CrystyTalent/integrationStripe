@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withApiAuth, AuthenticatedRequest } from '@/lib/middleware/api-auth';
 import Stripe from 'stripe';
 import connectDB from '@/lib/mongodb';
 import CheckoutToken from '@/models/CheckoutToken';
 import Payment from '@/models/Payment';
 import { generateCheckoutToken } from '@/lib/api-key';
-import { getBaseUrl } from '@/lib/config';
 
 async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
   try {
@@ -100,8 +99,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
     });
 
     // Generate checkout URL
-    const baseUrl = getBaseUrl();
-    const checkoutUrl = `${baseUrl}/checkout?token=${token}`;
+    const checkoutUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout?token=${token}`;
 
     return NextResponse.json(
       {

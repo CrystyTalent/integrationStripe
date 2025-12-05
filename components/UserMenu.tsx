@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 interface User {
@@ -12,13 +12,14 @@ interface User {
 
 export default function UserMenu() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [pathname]);
 
   const fetchUser = async () => {
     try {

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SignJWT } from 'jose';
+import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-secret-key-change-this-in-production'
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,8 +74,28 @@ export async function POST(request: NextRequest) {
 
     await user.save();
 
+    // Create auth token so the user is signed in immediately
+    const token = await new SignJWT({
+      userId: user._id.toString(),
+      email: user.email,
+      username: user.username,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(JWT_SECRET);
+
+    const cookieStore = await cookies();
+    cookieStore.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
     // Return user data (without password)
-    const response = NextResponse.json(
+    return NextResponse.json(
       {
         message: 'User registered successfully',
         user: {
@@ -82,7 +108,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-    return NextResponse.json(response, request);
   } catch (error: any) {
     console.error('User registration error:', error);
     if (error.code === 11000) {

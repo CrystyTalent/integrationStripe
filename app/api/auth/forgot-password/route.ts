@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import PasswordResetToken from '@/models/PasswordResetToken';
-import { getBaseUrl } from '@/lib/config';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -58,8 +57,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Generate reset URL
-      const baseUrl = getBaseUrl();
-      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+      const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${resetToken}`;
 
       // In a real application, you would send an email here
       // For now, we'll log it (in production, use a service like SendGrid, Resend, etc.)
