@@ -201,9 +201,9 @@ export default function UserRegistrationPage() {
 
           <div className="mt-6 pt-6 border-t border-slate-700/50 text-center">
             <p className="text-sm text-gray-400">
-              Want to register a store?{' '}
-              <Link href="/register/store" className="text-indigo-400 hover:text-indigo-300">
-                Register Store
+              Already have an account?{' '}
+              <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
+                Log in here
               </Link>
             </p>
           </div>

@@ -25,7 +25,13 @@ export default function HomePage() {
           </div>
           <div className="flex justify-center space-x-4 flex-wrap gap-4 mt-6">
             <Link
-              href="/register/user"
+              href="/login"
+              className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200"
+            >
+              Login
+            </Link>
+            <Link
+              href="/register"
               className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
             >
               Register User
