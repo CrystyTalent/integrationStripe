@@ -56,15 +56,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        <div className="mb-8 text-center">
-          <Link href="/" className="inline-block mb-4">
-            <h1 className="text-3xl font-bold text-white">Stripe Payment System</h1>
-          </Link>
-          <h2 className="text-2xl font-semibold text-white mb-2">Login</h2>
-          <p className="text-gray-400">Sign in to your account</p>
-        </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8">
+          <div className="mb-8 text-center">
+            <Link href="/" className="inline-block mb-4">
+              <h1 className="text-3xl font-bold text-white">Stripe Payment System</h1>
+            </Link>
+            <h2 className="text-2xl font-semibold text-white mb-2">Login</h2>
+            <p className="text-gray-400">Sign in to your account</p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-lg">

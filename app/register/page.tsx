@@ -14,7 +14,6 @@ export default function UserRegistrationPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -43,7 +42,7 @@ export default function UserRegistrationPage() {
         password: formData.password,
       };
 
-      const response = await fetch('/api/register/user', {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,10 +53,12 @@ export default function UserRegistrationPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to register user');
+        throw new Error(data.error || 'Failed to register');
       }
 
-      setSuccess(true);
+      router.push('/dashboard');
+      router.refresh();
+
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -65,56 +66,21 @@ export default function UserRegistrationPage() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-        <div className="max-w-2xl w-full bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 rounded-full mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">User Registered Successfully!</h2>
-          <p className="text-gray-400 mb-6">Your account has been created.</p>
-          <div className="flex space-x-4">
-            <button
-              onClick={() => {
-                setSuccess(false);
-                setFormData({
-                  username: '',
-                  email: '',
-                  password: '',
-                  confirmPassword: '',
-                });
-              }}
-              className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition"
-            >
-              Register Another User
-            </button>
-            <Link
-              href="/"
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-center"
-            >
-              Go to Home
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
-      <div className="max-w-2xl w-full">
-        <div className="mb-8 text-center">
-          <Link href="/" className="inline-block mb-4">
-            <h1 className="text-3xl font-bold text-white">Stripe Payment System</h1>
-          </Link>
-          <h2 className="text-2xl font-semibold text-white mb-2">Register as User</h2>
-          <p className="text-gray-400">Create your user account</p>
-        </div>
+      <div className="max-w-md w-full">
 
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8">
+          <div className="mb-8 text-center">
+            <Link href="/" className="inline-block mb-4">
+              <h1 className="text-3xl font-bold text-white">Stripe Payment System</h1>
+            </Link>
+            <h2 className="text-2xl font-semibold text-white mb-2">Register as User</h2>
+            <p className="text-gray-400">Create your user account</p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
@@ -195,7 +161,7 @@ export default function UserRegistrationPage() {
               disabled={loading}
               className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {loading ? 'Registering...' : 'Register User'}
+              {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
 
