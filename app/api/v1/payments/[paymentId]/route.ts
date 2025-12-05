@@ -3,12 +3,14 @@ import { withApiAuth, AuthenticatedRequest } from '@/lib/middleware/api-auth';
 import connectDB from '@/lib/mongodb';
 import Payment from '@/models/Payment';
 
+// Force dynamic rendering for this route (uses request.headers for API key auth)
+export const dynamic = 'force-dynamic';
+
 async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
   try {
     const store = req.store!;
     // Extract paymentId from the URL path since this handler is wrapped by withApiAuth
-    const url = new URL(req.url);
-    const segments = url.pathname.split('/');
+    const segments = req.nextUrl.pathname.split('/');
     const paymentId = segments[segments.length - 1];
 
     if (!paymentId) {

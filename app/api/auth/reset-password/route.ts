@@ -3,6 +3,9 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import PasswordResetToken from '@/models/PasswordResetToken';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -78,8 +81,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const token = searchParams.get('token');
+  const token = request.nextUrl.searchParams.get('token');
 
   if (!token) {
     return NextResponse.json(

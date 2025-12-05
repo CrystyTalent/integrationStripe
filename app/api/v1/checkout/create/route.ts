@@ -6,6 +6,9 @@ import CheckoutToken from '@/models/CheckoutToken';
 import Payment from '@/models/Payment';
 import { generateCheckoutToken } from '@/lib/api-key';
 
+// Force dynamic rendering for this route (uses request.headers for API key auth)
+export const dynamic = 'force-dynamic';
+
 async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
   try {
     const store = req.store!;

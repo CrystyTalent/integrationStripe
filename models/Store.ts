@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { decrypt } from '@/lib/encryption';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export interface IStore extends Document {
   storeName: string;
