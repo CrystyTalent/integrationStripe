@@ -25,7 +25,9 @@ Create a `.env.local` file in the root directory:
 ```env
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your key
 STRIPE_SECRET_KEY=your key
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+# NEXT_PUBLIC_BASE_URL is optional - automatically configured:
+# - Production: https://integration-stripe.vercel.app
+# - Development: http://localhost:3000
 STRIPE_WEBHOOK_SECRET=your_webhook_secret_here
 ```
 
@@ -149,7 +151,7 @@ To integrate this payment system into any website:
 
 ## Production Deployment
 
-1. Set `NEXT_PUBLIC_BASE_URL` to your production domain
+1. **Base URL is automatically configured**: Uses `https://integration-stripe.vercel.app` in production, `http://localhost:3000` in development
 2. Set up webhook endpoint in Stripe Dashboard
 3. Replace in-memory storage with a database
 4. Use environment variables for all sensitive keys

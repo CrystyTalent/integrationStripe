@@ -5,6 +5,7 @@ import connectDB from '@/lib/mongodb';
 import CheckoutToken from '@/models/CheckoutToken';
 import Payment from '@/models/Payment';
 import { generateCheckoutToken } from '@/lib/api-key';
+import { getBaseUrl } from '@/lib/config';
 
 async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
   try {
@@ -99,7 +100,7 @@ async function handler(req: AuthenticatedRequest): Promise<NextResponse> {
     });
 
     // Generate checkout URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = getBaseUrl();
     const checkoutUrl = `${baseUrl}/checkout?token=${token}`;
 
     return NextResponse.json(

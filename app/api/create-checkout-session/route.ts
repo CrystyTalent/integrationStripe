@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { paymentStoreFunctions } from '@/lib/stripe';
+import { getBaseUrl } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,8 +35,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/checkout?canceled=true`,
+      success_url: `${getBaseUrl()}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getBaseUrl()}/checkout?canceled=true`,
       customer_email: customerEmail || undefined,
     });
 

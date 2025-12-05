@@ -34,8 +34,12 @@ Create `.env.local` in the root directory:
 # MongoDB Connection
 MONGODB_URI=mongodb://localhost:27017/stripe-payment-system
 
-# Base URL
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+# Base URL (OPTIONAL - automatically configured)
+# The system automatically uses:
+# - https://integration-stripe.vercel.app in production (Vercel)
+# - http://localhost:3000 in development
+# Only set this if you need to override the default behavior:
+# NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 # Encryption Key (REQUIRED - Generate one first!)
 ENCRYPTION_KEY=your-32-byte-key-here
@@ -157,7 +161,7 @@ All require `Authorization: Bearer <api_key>` header.
 
 1. Set environment variables on your hosting platform (Vercel, etc.)
 2. Use MongoDB Atlas for production database
-3. Set `NEXT_PUBLIC_BASE_URL` to your production domain
+3. **Base URL is automatically configured**: Uses `https://integration-stripe.vercel.app` in production
 4. Use strong, random encryption key
 5. Enable HTTPS only
 6. Set up Stripe webhooks in production mode
