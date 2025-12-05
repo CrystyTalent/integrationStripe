@@ -37,10 +37,14 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const isJson = response.headers
+        .get('content-type')
+        ?.toLowerCase()
+        .includes('application/json');
+      const data = isJson ? await response.json() : null;
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to login');
+        throw new Error(data?.error || `Failed to login (status ${response.status})`);
       }
 
       // Redirect to dashboard or home page
