@@ -8,7 +8,7 @@ const TAG_POSITION = SALT_LENGTH + IV_LENGTH;
 const ENCRYPTED_POSITION = TAG_POSITION + TAG_LENGTH;
 
 // Get encryption key from environment variable
-function getEncryptionKey(): string {
+function getEncryptionKey(): Buffer {
   const key = process.env.ENCRYPTION_KEY;
   if (!key) {
     throw new Error('ENCRYPTION_KEY environment variable is not set');
@@ -17,7 +17,7 @@ function getEncryptionKey(): string {
   if (key.length !== 32) {
     return crypto.createHash('sha256').update(key).digest();
   }
-  return Buffer.from(key);
+  return Buffer.from(key, 'utf8');
 }
 
 /**
